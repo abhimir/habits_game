@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Builder: The Atomic Habits Game</title>
+    <style>
+        :root {
+            --primary: #4A6FDC;
+            --primary-light: #7590E8;
+            --secondary: #F97316;
+            --background: #F8FAFC;
+            --text: #1E293B;
+            --text-light: #64748B;
+            --success: #22C55E;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --card: #FFFFFF;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 16px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1, h2, h3 {
+            margin-top: 0;
+        }
+        
+        .card {
+            background-color: var(--card);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 20px;
+            margin: 10px 0;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            border-radius: 20px;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-light);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #E96310;
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+        }
+        
+        .btn-success:hover {
+            background-color: #1EB358;
+        }
+        
+        .streak-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .streak-day {
+            width: 30px;
+            height: 30px;
+            background-color: #e0e0e0;
+            border-radius: 50%;
+            margin-right: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .streak-active {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .habit-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .habit-checkbox {
+            margin-right: 15px;
+        }
+        
+        .habit-details {
+            flex-grow: 1;
+        }
+        
+        .badge-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .badge {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--text-light);
+            position: relative;
+        }
+        
+        .badge-unlocked {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .badge-tooltip {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--text);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .badge:hover .badge-tooltip {
+            opacity: 1;
+        }
+        
+        .screen {
+            display: none;
+        }
+        
+        .active {
+            display: block;
+        }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom: 2px solid var(--primary);
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .scenario-container {
+            margin-top: 20px;
+        }
+        
+        .option {
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .option:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .option.selected {
+            border-color: var(--primary);
+            background-color: rgba(74, 111, 220, 0.1);
+        }
+        
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .feedback.correct {
+            background-color: rgba(34, 197, 94, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+        
+        .feedback.incorrect {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+        
+        .stat {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .stat-icon {
+            width: 30px;
+            height: 30px;
+            background-color: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            margin-left: auto;
+        }
+        
+        .laws-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .law-card {
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            transition: transform 0.3s;
+        }
+        
+        .law-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .law-title {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 4px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+            transform: translateX(150%);
+            transition: transform 0.3s;
+            z-index: 100;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        @media (max-width: 600px) {
+            .laws-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Habit Builder: The Atomic Habits Game</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- START SCREEN -->
+        <div id="start-screen" class="screen active">
+            <div class="card">
+                <h2>Welcome to Habit Builder!</h2>
+                <p>Based on James Clear's "Atomic Habits," this game will help you understand and apply the principles of habit formation to transform your life.</p>
+                <p>Remember: <strong>Small habits. Remarkable results.</strong></p>
+                <button id="start-btn" class="btn">Start Your Journey</button>
+            </div>
+        </div>
+        
+        <!-- IDENTITY SCREEN -->
+        <div id="identity-screen" class="screen">
+            <div class="card">
+                <h2>Step 1: Choose Your Identity</h2>
+                <p>Habits are not about what you want to achieve, but who you wish to become. Select an identity you want to build:</p>
+                
+                <div id="identity-options">
+                    <div class="option" data-identity="health">
+                        <h3>Health Conscious Person</h3>
+                        <p>Someone who prioritizes physical well-being and healthy choices</p>
+                    </div>
+                    <div class="option" data-identity="productive">
+                        <h3>Productive Individual</h3>
+                        <p>Someone who manages time effectively and accomplishes important tasks</p>
+                    </div>
+                    <div class="option" data-identity="mindful">
+                        <h3>Mindful Person</h3>
+                        <p>Someone who practices awareness and emotional regulation</p>
+                    </div>
+                    <div class="option" data-identity="learner">
+                        <h3>Continuous Learner</h3>
+                        <p>Someone who consistently acquires new knowledge and skills</p>
+                    </div>
+                </div>
+                <button id="continue-identity" class="btn" disabled>Continue</button>
+            </div>
+        </div>
+        
+        <!-- HABIT CREATION SCREEN -->
+        <div id="habit-creation-screen" class="screen">
+            <div class="card">
+                <h2>Step 2: Create Your First Habit</h2>
+                <p>Let's apply the Four Laws of Behavior Change to design an effective habit.</p>
+                
+                <div id="habit-templates"></div>
+                
+                <div id="habit-form">
+                    <h3>My Habit:</h3>
+                    <input type="text" id="habit-name" placeholder="Name your habit" class="form-control">
+                    
+                    <div class="laws-container">
+                        <div class="law-card">
+                            <div class="law-title">1st Law: Make it Obvious</div>
+                            <p>I will [HABIT] at [TIME] in [LOCATION]</p>
+                            <input type="text" id="habit-cue" placeholder="When and where?" class="form-control">
+                        </div>
+                        
+                        <div class="law-card">
+                            <div class="law-title">2nd Law: Make it Attractive</div>
+                            <p>I will [HABIT] and then I get to [REWARD]</p>
+                            <input type="text" id="habit-craving" placeholder="What makes it appealing?" class="form-control">
+                        </div>
+                        
+                        <div class="law-card">
+                            <div class="law-title">3rd Law: Make it Easy</div>
+                            <p>How can you reduce friction?</p>
+                            <input type="text" id="habit-response" placeholder="How to make it easier?" class="form-control">
+                        </div>
+                        
+                        <div class="law-card">
+                            <div class="law-title">4th Law: Make it Satisfying</div>
+                            <p>How will you track success?</p>
+                            <input type="text" id="habit-reward" placeholder="How to track progress?" class="form-control">
+                        </div>
+                    </div>
+                    
+                    <button id="create-habit" class="btn" style="margin-top: 20px;">Create Habit</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- MAIN DASHBOARD -->
+        <div id="dashboard-screen" class="screen">
+            <div class="tab-container">
+                <div class="tab active" data-tab="habits">Today's Habits</div>
+                <div class="tab" data-tab="challenges">Daily Challenge</div>
+                <div class="tab" data-tab="progress">My Progress</div>
+            </div>
+            
+            <div id="habits-tab" class="tab-content active">
+                <div class="card">
+                    <h2>Your Habit Tracker</h2>
+                    <p id="identity-statement">As a <span id="chosen-identity"></span>, I consistently...</p>
+                    
+                    <div class="streak-container">
+                        <div class="streak-day" data-day="1">1</div>
+                        <div class="streak-day" data-day="2">2</div>
+                        <div class="streak-day" data-day="3">3</div>
+                        <div class="streak-day" data-day="4">4</div>
+                        <div class="streak-day" data-day="5">5</div>
+                        <div class="streak-day" data-day="6">6</div>
+                        <div class="streak-day" data-day="7">7</div>
+                    </div>
+                    
+                    <div id="habit-list"></div>
+                    
+                    <button id="add-habit" class="btn" style="margin-top: 15px;">Add Another Habit</button>
+                </div>
+            </div>
+            
+            <div id="challenges-tab" class="tab-content">
+                <div class="card">
+                    <h2>Daily Challenge</h2>
+                    <p>Apply Atomic Habits principles to solve this scenario:</p>
+                    
+                    <div id="scenario-container" class="scenario-container">
+                        <h3 id="scenario-title"></h3>
+                        <p id="scenario-description"></p>
+                        
+                        <div id="scenario-options"></div>
+                        
+                        <div id="feedback" class="feedback"></div>
+                        
+                        <button id="submit-answer" class="btn" style="margin-top: 15px;" disabled>Submit Answer</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="progress-tab" class="tab-content">
+                <div class="card">
+                    <h2>Your Habit Building Journey</h2>
+                    
+                    <div class="stats-container">
+                        <div class="stat">
+                            <div class="stat-icon">🔥</div>
+                            <div class="stat-label">Current Streak</div>
+                            <div class="stat-value" id="current-streak">0 days</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-icon">⭐</div>
+                            <div class="stat-label">Atomic Points</div>
+                            <div class="stat-value" id="atomic-points">0</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-label">Habits Completed</div>
+                            <div class="stat-value" id="habits-completed">0</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-icon">🏆</div>
+                            <div class="stat-label">Challenges Solved</div>
+                            <div class="stat-value" id="challenges-solved">0</div>
+                        </div>
+                    </div>
+                    
+                    <h3>Progress to Automaticity</h3>
+                    <p>Habits typically take 2-8 weeks to become automatic:</p>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="automaticity-progress"></div>
+                    </div>
+                    <p id="automaticity-status">0% - Just starting your habit journey</p>
+                    
+                    <h3>Badges</h3>
+                    <div class="badge-container">
+                        <div class="badge" id="badge-identity">
+                            <span>👤</span>
+                            <div class="badge-tooltip">Identity Shifter: Define who you want to become</div>
+                        </div>
+                        <div class="badge" id="badge-cue">
+                            <span>👁️</span>
+                            <div class="badge-tooltip">Cue Creator: Master the 1st Law</div>
+                        </div>
+                        <div class="badge" id="badge-craving">
+                            <span>✨</span>
+                            <div class="badge-tooltip">Desire Designer: Master the 2nd Law</div>
+                        </div>
+                        <div class="badge" id="badge-response">
+                            <span>🔄</span>
+                            <div class="badge-tooltip">Friction Reducer: Master the 3rd Law</div>
+                        </div>
+                        <div class="badge" id="badge-reward">
+                            <span>🎁</span>
+                            <div class="badge-tooltip">Reward Engineer: Master the 4th Law</div>
+                        </div>
+                        <div class="badge" id="badge-streaker">
+                            <span>🔥</span>
+                            <div class="badge-tooltip">Streaker: Maintain a 7-day streak</div>
+                        </div>
+                        <div class="badge" id="badge-atomic">
+                            <span>⚛️</span>
+                            <div class="badge-tooltip">Atomic Thinker: Earn 100 Atomic Points</div>
+                        </div>
+                        <div class="badge" id="badge-stacker">
+                            <span>📚</span>
+                            <div class="badge-tooltip">Habit Stacker: Create 3+ habits</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="notification" class="notification"></div>
+    
+    <script>
+        // Game data
+        const gameData = {
+            currentScreen: 'start-screen',
+            chosenIdentity: '',
+            identityName: '',
+            habits: [],
+            currentDay: 1,
+            streak: 0,
+            atomicPoints: 0,
+            habitsCompleted: 0,
+            challengesSolved: 0,
+            automaticityProgress: 0,
+            activeTab: 'habits',
+            badges: {
+                identity: false,
+                cue: false,
+                craving: false,
+                response: false,
+                reward: false,
+                streaker: false,
+                atomic: false,
+                stacker: false
+            },
+            completedDays: [],
+            currentScenario: null,
+            selectedOption: null
+        };
+        
+        // Habit templates by identity
+        const habitTemplates = {
+            health: [
+                {
+                    name: "Daily Exercise",
+                    cue: "After I brush my teeth in the morning, I will exercise for 10 minutes in my living room",
+                    craving: "I will exercise and then I get to listen to my favorite podcast",
+                    response: "I will lay out my workout clothes the night before",
+                    reward: "I will mark it on my habit tracker and share weekly progress with a friend"
+                },
+                {
+                    name: "Drink More Water",
+                    cue: "Every time I sit down at my desk, I will drink a glass of water",
+                    craving: "I will use a special water bottle that I enjoy using",
+                    response: "I will fill water bottles in advance and place them at my desk",
+                    reward: "I will use an app to track my daily intake"
+                }
+            ],
+            productive: [
+                {
+                    name: "Morning Planning",
+                    cue: "After I pour my morning coffee, I will plan my top 3 priorities for the day",
+                    craving: "I will use a beautiful notebook that makes planning enjoyable",
+                    response: "I will keep my planner next to the coffee maker",
+                    reward: "I will check off completed tasks and review my progress weekly"
+                },
+                {
+                    name: "Focus Time",
+                    cue: "After lunch each day, I will do 25 minutes of focused work",
+                    craving: "I will work on projects I find meaningful",
+                    response: "I will turn off all notifications during this time",
+                    reward: "I will track my focus sessions and celebrate milestones"
+                }
+            ],
+            mindful: [
+                {
+                    name: "Daily Meditation",
+                    cue: "After I wake up each morning, I will meditate for 5 minutes in my bedroom",
+                    craving: "I will use a meditation app with guidance I enjoy",
+                    response: "I will place my meditation cushion next to my bed",
+                    reward: "I will maintain a meditation streak in my app"
+                },
+                {
+                    name: "Gratitude Practice",
+                    cue: "Before I go to bed, I will write down three things I'm grateful for",
+                    craving: "I will use a special journal that I enjoy writing in",
+                    response: "I will keep my gratitude journal on my nightstand",
+                    reward: "I will review past entries when I'm feeling down"
+                }
+            ],
+            learner: [
+                {
+                    name: "Daily Reading",
+                    cue: "After dinner, I will read for 20 minutes in my favorite chair",
+                    craving: "I will read books I'm genuinely interested in",
+                    response: "I will keep my current book on the coffee table",
+                    reward: "I will track books completed and share insights with friends"
+                },
+                {
+                    name: "Skill Practice",
+                    cue: "At 7pm each evening, I will practice my chosen skill for 15 minutes",
+                    craving: "I will focus on skills that interest me",
+                    response: "I will set up my practice area in advance",
+                    reward: "I will document my progress with photos or videos"
+                }
+            ]
+        };
+        
+        // Scenarios for challenges
+        const scenarios = [
+            {
+                title: "Environment Design Challenge",
+                description: "You've been trying to read more books, but find yourself watching TV instead. Which approach would best help you read more consistently?",
+                options: [
+                    {
+                        text: "Use willpower to force yourself to read instead of watching TV",
+                        correct: false,
+                        feedback: "Relying on willpower alone is ineffective. Remember: 'Make it obvious' by designing your environment."
+                    },
+                    {
+                        text: "Hide the TV remote and place an interesting book on the coffee table",
+                        correct: true,
+                        feedback: "Correct! You're applying the 1st Law (Make it Obvious) by making the book visible and the 3rd Law (Make it Easy) by increasing friction for the unwanted behavior."
+                    },
+                    {
+                        text: "Set a reminder to read but keep your normal living room setup",
+                        correct: false,
+                        feedback: "A reminder helps, but doesn't change the environment. According to Atomic Habits, environment design is more powerful than intentions."
+                    }
+                ],
+                law: "1st Law: Make it Obvious"
+            },
+            {
+                title: "Temptation Bundling Challenge",
+                description: "You want to establish a regular exercise habit but struggle with motivation. Which strategy would be most effective?",
+                options: [
+                    {
+                        text: "Only allow yourself to watch your favorite show while exercising on a treadmill",
+                        correct: true,
+                        feedback: "Excellent! You're applying 'temptation bundling' from the 2nd Law (Make it Attractive) by pairing something you want to do with something you need to do."
+                    },
+                    {
+                        text: "Reward yourself with a treat after each workout",
+                        correct: false,
+                        feedback: "While rewards can help, this doesn't make the exercise itself more attractive. Temptation bundling is more immediate and effective."
+                    },
+                    {
+                        text: "Set a goal to lose 20 pounds to stay motivated",
+                        correct: false,
+                        feedback: "According to Atomic Habits, outcome-based goals are less effective than identity-based habits and immediate attractiveness."
+                    }
+                ],
+                law: "2nd Law: Make it Attractive"
+            },
+            {
+                title: "Habit Friction Challenge",
+                description: "You want to start a daily journaling habit. Which approach would make you most likely to succeed?",
+                options: [
+                    {
+                        text: "Buy an expensive, high-quality journal to motivate yourself",
+                        correct: false,
+                        feedback: "While nice tools can help, they don't address the friction involved in the habit. The 3rd Law teaches us to reduce friction for good habits."
+                    },
+                    {
+                        text: "Set a goal to write three pages every morning",
+                        correct: false,
+                        feedback: "This creates more friction by setting a high initial bar. Remember the Two-Minute Rule: make habits easy to start."
+                    },
+                    {
+                        text: "Keep your journal open on your desk with a pen ready and commit to writing just one sentence",
+                        correct: true,
+                        feedback: "Perfect! You're applying the 3rd Law (Make it Easy) by reducing friction and using the Two-Minute Rule to make starting as easy as possible."
+                    }
+                ],
+                law: "3rd Law: Make it Easy"
+            },
+            {
+                title: "Immediate Reward Challenge",
+                description: "You're trying to save money by bringing lunch to work instead of buying it. Which strategy would be most effective?",
+                options: [
+                    {
+                        text: "Focus on the long-term financial benefits of saving money",
+                        correct: false,
+                        feedback: "Long-term benefits don't satisfy the 4th Law. Remember that humans prefer immediate rewards to delayed ones."
+                    },
+                    {
+                        text: "Transfer the money you save each day to a visible 'vacation fund' for immediate satisfaction",
+                        correct: true,
+                        feedback: "Great job! You're applying the 4th Law (Make it Satisfying) by creating an immediate, visible reward for your habit."
+                    },
+                    {
+                        text: "Set a monthly savings goal and check progress at the end of the month",
+                        correct: false,
+                        feedback: "Monthly tracking is too delayed. According to Atomic Habits, immediate satisfaction drives habit formation more effectively."
+                    }
+                ],
+                law: "4th Law: Make it Satisfying"
+            },
+            {
+                title: "Identity-Based Habits Challenge",
+                description: "You want to become more organized. Which approach aligns best with the core message of Atomic Habits?",
+                options: [
+                    {
+                        text: "Set concrete goals like 'clean the house for 30 minutes every day'",
+                        correct: false,
+                        feedback: "This is an outcome-based approach. Atomic Habits emphasizes that identity change is more powerful than outcome change."
+                    },
+                    {
+                        text: "Think of yourself as 'an organized person' and make decisions based on what an organized person would do",
+                        correct: true,
+                        feedback: "Excellent! You're focusing on identity-based habits, which is a core principle in Atomic Habits. 'The most effective way to change your habits is to focus not on what you want to achieve, but on who you wish to become.'"
+                    },
+                    {
+                        text: "Create a reward system where you get points for completing organizational tasks",
+                        correct: false,
+                        feedback: "While rewards can help, they don't address the fundamental identity shift that Atomic Habits recommends as the foundation of lasting change."
+                    }
+                ],
+                law: "Identity Change"
+            },
+            {
+                title: "Habit Stacking Challenge",
+                description: "You want to start a daily flossing habit. Based on Atomic Habits, which approach would be most effective?",
+                options: [
+                    {
+                        text: "Place the floss in a very obvious location on your bathroom counter",
+                        correct: false,
+                        feedback: "While this makes the cue more obvious (1st Law), it doesn't fully utilize the power of habit stacking."
+                    },
+                    {
+                        text: "After I brush my teeth, I will floss one tooth",
+                        correct: true,
+                        feedback: "Perfect! You're applying habit stacking (connecting a new habit to an existing one) combined with the Two-Minute Rule to make it super easy to start."
+                    },
+                    {
+                        text: "Set a daily reminder on your phone to floss",
+                        correct: false,
+                        feedback: "Reminders can help, but they're not as effective as habit stacking, which uses the completion of one habit to trigger another."
+                    }
+                ],
+                law: "Habit Stacking"
+            }
+        ];
+        
+        const identityLabels = {
+            health: "Health Conscious Person",
+            productive: "Productive Individual",
+            mindful: "Mindful Person",
+            learner: "Continuous Learner"
+        };
+        
+        // Utility functions
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            gameData.currentScreen = screenId;
+        }
+        
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabId + '-tab').classList.add('active');
+            
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
+            gameData.activeTab = tabId;
+        }
+        
+        function showNotification(message, duration = 3000) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, duration);
+        }
+        
+        function updateStats() {
+            document.getElementById('current-streak').textContent = gameData.streak + ' days';
+            document.getElementById('atomic-points').textContent = gameData.atomicPoints;
+            document.getElementById('habits-completed').textContent = gameData.habitsCompleted;
+            document.getElementById('challenges-solved').textContent = gameData.challengesSolved;
+            
+            // Update automaticity progress
+            const progressBar = document.getElementById('automaticity-progress');
+            progressBar.style.width = `${gameData.automaticityProgress}%`;
+            
+            let statusText = "";
+            if (gameData.automaticityProgress < 25) {
+                statusText = "Just starting your habit journey";
+            } else if (gameData.automaticityProgress < 50) {
+                statusText = "Building momentum";
+            } else if (gameData.automaticityProgress < 75) {
+                statusText = "Habits forming well";
+            } else if (gameData.automaticityProgress < 100) {
+                statusText = "Almost automatic!";
+            } else {
+                statusText = "Habits are now automatic!";
+            }
+            
+            document.getElementById('automaticity-status').textContent = `${gameData.automaticityProgress}% - ${statusText}`;
+            
+            // Update badges
+            for (const [badge, unlocked] of Object.entries(gameData.badges)) {
+                const badgeEl = document.getElementById(`badge-${badge}`);
+                if (unlocked) {
+                    badgeEl.classList.add('badge-unlocked');
+                } else {
+                    badgeEl.classList.remove('badge-unlocked');
+                }
+            }
+            
+            // Update streak visualization
+            document.querySelectorAll('.streak-day').forEach(day => {
+                const dayNum = parseInt(day.getAttribute('data-day'));
+                if (gameData.completedDays.includes(dayNum)) {
+                    day.classList.add('streak-active');
+                } else {
+                    day.classList.remove('streak-active');
+                }
+            });
+        }
+        
+        function updateHabitList() {
+            const habitList = document.getElementById('habit-list');
+            habitList.innerHTML = '';
+            
+            gameData.habits.forEach((habit, index) => {
+                const habitItem = document.createElement('div');
+                habitItem.className = 'habit-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'habit-checkbox';
+                checkbox.checked = habit.completedToday;
+                checkbox.addEventListener('change', () => {
+                    gameData.habits[index].completedToday = checkbox.checked;
+                    
+                    if (checkbox.checked) {
+                        gameData.atomicPoints += 5;
+                        gameData.habitsCompleted += 1;
+                        showNotification('+ 5 Atomic Points for completing a habit!');
+                        
+                        // Check if all habits are completed for the day
+                        const allCompleted = gameData.habits.every(h => h.completedToday);
+                        if (allCompleted && !gameData.completedDays.includes(gameData.currentDay)) {
+                            gameData.completedDays.push(gameData.currentDay);
+                            gameData.streak += 1;
+                            gameData.automaticityProgress += 5;
+                            
+                            if (gameData.streak >= 7 && !gameData.badges.streaker) {
+                                gameData.badges.streaker = true;
+                                showNotification('🏆 Badge Unlocked: Streaker!');
+                            }
+                            
+                            showNotification(`Streak: ${gameData.streak} days! +10 Atomic Points`, 3000);
+                            gameData.atomicPoints += 10;
+                        }
+                    } else {
+                        gameData.atomicPoints = Math.max(0, gameData.atomicPoints - 5);
+                        gameData.habitsCompleted = Math.max(0, gameData.habitsCompleted - 1);
+                        
+                        // Remove from completed days if not all habits are completed
+                        const allCompleted = gameData.habits.every(h => h.completedToday);
+                        if (!allCompleted && gameData.completedDays.includes(gameData.currentDay)) {
+                            gameData.completedDays = gameData.completedDays.filter(day => day !== gameData.currentDay);
+                            gameData.streak = Math.max(0, gameData.streak - 1);
+                            gameData.automaticityProgress = Math.max(0, gameData.automaticityProgress - 5);
+                        }
+                    }
+                    
+                    updateStats();
+                });
+                
+                const habitDetails = document.createElement('div');
+                habitDetails.className = 'habit-details';
+                
+                const habitName = document.createElement('div');
+                habitName.style.fontWeight = 'bold';
+                habitName.textContent = habit.name;
+                
+                const habitCue = document.createElement('div');
+                habitCue.style.fontSize = '0.9em';
+                habitCue.style.color = 'var(--text-light)';
+                habitCue.textContent = habit.cue;
+                
+                habitDetails.appendChild(habitName);
+                habitDetails.appendChild(habitCue);
+                
+                habitItem.appendChild(checkbox);
+                habitItem.appendChild(habitDetails);
+                
+                habitList.appendChild(habitItem);
+            });
+            
+            if (gameData.habits.length >= 3 && !gameData.badges.stacker) {
+                gameData.badges.stacker = true;
+                showNotification('🏆 Badge Unlocked: Habit Stacker!');
+                updateStats();
+            }
+            
+            if (gameData.atomicPoints >= 100 && !gameData.badges.atomic) {
+                gameData.badges.atomic = true;
+                showNotification('🏆 Badge Unlocked: Atomic Thinker!');
+                updateStats();
+            }
+        }
+        
+        function loadScenario() {
+            // Select a random scenario that hasn't been completed yet
+            const availableScenarios = scenarios.filter(s => !s.completed);
+            
+            if (availableScenarios.length === 0) {
+                // Reset all scenarios if all have been completed
+                scenarios.forEach(s => s.completed = false);
+                gameData.currentScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+            } else {
+                gameData.currentScenario = availableScenarios[Math.floor(Math.random() * availableScenarios.length)];
+            }
+            
+            const scenario = gameData.currentScenario;
+            
+            document.getElementById('scenario-title').textContent = scenario.title;
+            document.getElementById('scenario-description').textContent = scenario.description;
+            
+            const optionsContainer = document.getElementById('scenario-options');
+            optionsContainer.innerHTML = '';
+            
+            scenario.options.forEach((option, index) => {
+                const optionEl = document.createElement('div');
+                optionEl.className = 'option';
+                optionEl.textContent = option.text;
+                optionEl.setAttribute('data-index', index);
+                
+                optionEl.addEventListener('click', () => {
+                    // Clear previous selections
+                    document.querySelectorAll('.option').forEach(el => {
+                        el.classList.remove('selected');
+                    });
+                    
+                    // Select this option
+                    optionEl.classList.add('selected');
+                    gameData.selectedOption = index;
+                    
+                    // Enable submit button
+                    document.getElementById('submit-answer').disabled = false;
+                });
+                
+                optionsContainer.appendChild(optionEl);
+            });
+            
+            // Reset feedback and selected option
+            document.getElementById('feedback').style.display = 'none';
+            document.getElementById('submit-answer').disabled = true;
+            gameData.selectedOption = null;
+        }
+        
+        function addHabitTemplate(habit) {
+            gameData.habits.push({
+                name: habit.name,
+                cue: habit.cue,
+                craving: habit.craving,
+                response: habit.response,
+                reward: habit.reward,
+                completedToday: false
+            });
+            
+            showNotification(`Habit added: ${habit.name}`);
+            updateHabitList();
+            updateStats();
+            
+            // Check for badge unlocks based on habit components
+            if (!gameData.badges.cue && habit.cue) {
+                gameData.badges.cue = true;
+                showNotification('🏆 Badge Unlocked: Cue Creator!');
+            }
+            
+            if (!gameData.badges.craving && habit.craving) {
+                gameData.badges.craving = true;
+                showNotification('🏆 Badge Unlocked: Desire Designer!');
+            }
+            
+            if (!gameData.badges.response && habit.response) {
+                gameData.badges.response = true;
+                showNotification('🏆 Badge Unlocked: Friction Reducer!');
+            }
+            
+            if (!gameData.badges.reward && habit.reward) {
+                gameData.badges.reward = true;
+                showNotification('🏆 Badge Unlocked: Reward Engineer!');
+            }
+            
+            updateStats();
+        }
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Start button
+            document.getElementById('start-btn').addEventListener('click', () => {
+                showScreen('identity-screen');
+            });
+            
+            // Identity selection
+            const identityOptions = document.querySelectorAll('#identity-options .option');
+            identityOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    identityOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    gameData.chosenIdentity = option.getAttribute('data-identity');
+                    gameData.identityName = identityLabels[gameData.chosenIdentity];
+                    document.getElementById('continue-identity').disabled = false;
+                });
+            });
+            
+            // Continue to habit creation
+            document.getElementById('continue-identity').addEventListener('click', () => {
+                document.getElementById('chosen-identity').textContent = gameData.identityName;
+                
+                // Load habit templates for the chosen identity
+                const templates = habitTemplates[gameData.chosenIdentity];
+                const templatesContainer = document.getElementById('habit-templates');
+                templatesContainer.innerHTML = '<h3>Suggested Habits:</h3>';
+                
+                templates.forEach(template => {
+                    const templateCard = document.createElement('div');
+                    templateCard.className = 'option';
+                    
+                    const templateTitle = document.createElement('h4');
+                    templateTitle.textContent = template.name;
+                    
+                    const templateDesc = document.createElement('p');
+                    templateDesc.textContent = template.cue;
+                    
+                    const useButton = document.createElement('button');
+                    useButton.className = 'btn btn-secondary';
+                    useButton.textContent = 'Use This Template';
+                    useButton.addEventListener('click', () => {
+                        // Populate form with template values
+                        document.getElementById('habit-name').value = template.name;
+                        document.getElementById('habit-cue').value = template.cue;
+                        document.getElementById('habit-craving').value = template.craving;
+                        document.getElementById('habit-response').value = template.response;
+                        document.getElementById('habit-reward').value = template.reward;
+                    });
+                    
+                    templateCard.appendChild(templateTitle);
+                    templateCard.appendChild(templateDesc);
+                    templateCard.appendChild(useButton);
+                    
+                    templatesContainer.appendChild(templateCard);
+                });
+                
+                gameData.badges.identity = true;
+                showScreen('habit-creation-screen');
+            });
+            
+            // Create habit
+            document.getElementById('create-habit').addEventListener('click', () => {
+                const habitName = document.getElementById('habit-name').value.trim();
+                const habitCue = document.getElementById('habit-cue').value.trim();
+                const habitCraving = document.getElementById('habit-craving').value.trim();
+                const habitResponse = document.getElementById('habit-response').value.trim();
+                const habitReward = document.getElementById('habit-reward').value.trim();
+                
+                if (!habitName) {
+                    showNotification('Please name your habit');
+                    return;
+                }
+                
+                const newHabit = {
+                    name: habitName,
+                    cue: habitCue,
+                    craving: habitCraving,
+                    response: habitResponse,
+                    reward: habitReward,
+                    completedToday: false
+                };
+                
+                addHabitTemplate(newHabit);
+                
+                // Award atomic points for creating a well-designed habit
+                let points = 10; // Base points
+                if (habitCue) points += 5;
+                if (habitCraving) points += 5;
+                if (habitResponse) points += 5;
+                if (habitReward) points += 5;
+                
+                gameData.atomicPoints += points;
+                showNotification(`+${points} Atomic Points for creating a habit!`);
+                
+                // Reset form
+                document.getElementById('habit-name').value = '';
+                document.getElementById('habit-cue').value = '';
+                document.getElementById('habit-craving').value = '';
+                document.getElementById('habit-response').value = '';
+                document.getElementById('habit-reward').value = '';
+                
+                // If first habit, go to dashboard
+                if (gameData.habits.length === 1) {
+                    showScreen('dashboard-screen');
+                    // Load initial scenario
+                    loadScenario();
+                }
+            });
+            
+            // Add another habit
+            document.getElementById('add-habit').addEventListener('click', () => {
+                showScreen('habit-creation-screen');
+            });
+            
+            // Submit challenge answer
+            document.getElementById('submit-answer').addEventListener('click', () => {
+                const scenarioOptions = gameData.currentScenario.options;
+                const selectedOption = scenarioOptions[gameData.selectedOption];
+                const feedback = document.getElementById('feedback');
+                
+                feedback.textContent = selectedOption.feedback;
+                feedback.style.display = 'block';
+                
+                if (selectedOption.correct) {
+                    feedback.className = 'feedback correct';
+                    gameData.atomicPoints += 20;
+                    gameData.challengesSolved += 1;
+                    gameData.currentScenario.completed = true;
+                    showNotification('+ 20 Atomic Points for solving the challenge!');
+                } else {
+                    feedback.className = 'feedback incorrect';
+                    gameData.atomicPoints += 5; // Still give some points for trying
+                    showNotification('+ 5 Atomic Points for attempting the challenge');
+                }
+                
+                updateStats();
+                
+                // Reveal correct answer if wrong
+                if (!selectedOption.correct) {
+                    const correctOption = scenarioOptions.findIndex(option => option.correct);
+                    setTimeout(() => {
+                        document.querySelectorAll('.option')[correctOption].style.border = '2px solid var(--success)';
+                    }, 1000);
+                }
+                
+                // Disable submit button until next scenario
+                document.getElementById('submit-answer').disabled = true;
+                
+                // Load new scenario after delay
+                setTimeout(() => {
+                    loadScenario();
+                }, 5000);
+            });
+            
+            // Tab switching
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    showTab(tabId);
+                });
+            });
+            
+            // Initialize badge tooltips
+            document.querySelectorAll('.badge').forEach(badge => {
+                badge.addEventListener('mouseenter', () => {
+                    badge.querySelector('.badge-tooltip').style.opacity = 1;
+                });
+                
+                badge.addEventListener('mouseleave', () => {
+                    badge.querySelector('.badge-tooltip').style.opacity = 0;
+                });
+            });
+            
+            // Next day button (would be triggered automatically in a real game)
+            // For demo purposes, we're adding a way to advance days manually
+            const nextDayBtn = document.createElement('button');
+            nextDayBtn.className = 'btn';
+            nextDayBtn.textContent = 'Advance to Next Day';
+            nextDayBtn.style.marginTop = '20px';
+            nextDayBtn.addEventListener('click', () => {
+                gameData.currentDay += 1;
+                
+                // Reset habit completion for the new day
+                gameData.habits.forEach(habit => {
+                    habit.completedToday = false;
+                });
+                
+                updateHabitList();
+                showNotification(`Day ${gameData.currentDay} has begun!`);
+                
+                // Load new scenario
+                loadScenario();
+            });
+            
+            // Add to the habits tab
+            document.getElementById('habits-tab').querySelector('.card').appendChild(nextDayBtn);
+        });
+    </script>
+</body>
+</html>
