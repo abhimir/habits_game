@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Swipe Your Habit</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f4f4f4;
+      text-align: center;
+      padding: 40px;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      max-width: 500px;
+      margin: auto;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .buttons {
+      margin-top: 20px;
+    }
+    button {
+      padding: 12px 20px;
+      margin: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .left {
+      background-color: #dc3545;
+      color: white;
+    }
+    .right {
+      background-color: #28a745;
+      color: white;
+    }
+    #stats {
+      margin-top: 30px;
+      font-size: 1.1em;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📘 Swipe Your Habit</h1>
+  <p>Survive 7 days of habit decisions!</p>
+
+  <div class="card" id="card">
+    Loading...
+  </div>
+
+  <div class="buttons">
+    <button class="left" onclick="swipe('left')">⬅️ No</button>
+    <button class="right" onclick="swipe('right')">➡️ Yes</button>
+  </div>
+
+  <div id="stats">
+    Day: <span id="day">1</span> | Identity: <span id="identity">5</span> | Motivation: <span id="motivation">5</span> | Streak: <span id="streak">0</span>
+  </div>
+
+  <script>
+    const cards = [
+      {
+        text: "Read 2 pages today?",
+        effects: { left: {identity: 0, motivation: 1, streak: 0}, right: {identity: 1, motivation: -1, streak: 1} }
+      },
+      {
+        text: "Increase to 10 pages?",
+        effects: { left: {identity: 1, motivation: 1, streak: 1}, right: {identity: 2, motivation: -2, streak: 1} }
+      },
+      {
+        text: "Skip reading to hang out with friends?",
+        effects: { left: {identity: 2, motivation: -1, streak: 1}, right: {identity: -2, motivation: 2, streak: -1} }
+      },
+      {
+        text: "Log your progress in your habit tracker?",
+        effects: { left: {identity: 0, motivation: 0, streak: 0}, right: {identity: 1, motivation: 1, streak: 0} }
+      },
+      {
+        text: "You're tired. Do the habit anyway?",
+        effects: { left: {identity: -1, motivation: 1, streak: -1}, right: {identity: 2, motivation: -2, streak: 1} }
+      },
+      {
+        text: "Tempted to doomscroll instead of reading. Resist?",
+        effects: { left: {identity: -1, motivation: 1, streak: -1}, right: {identity: 1, motivation: -1, streak: 1} }
+      },
+      {
+        text: "Reward yourself with coffee after reading?",
+        effects: { left: {identity: 0, motivation: -1, streak: 1}, right: {identity: 1, motivation: 1, streak: 1} }
+      }
+    ];
+
+    let day = 1, identity = 5, motivation = 5, streak = 0;
+
+    function updateStats() {
+      document.getElementById("day").textContent = day;
+      document.getElementById("identity").textContent = identity;
+      document.getElementById("motivation").textContent = motivation;
+      document.getElementById("streak").textContent = streak;
+    }
+
+    function showCard() {
+      if (day > 7) {
+        document.getElementById("card").innerHTML = `<strong>Game Over!</strong><br>You finished with:<br>Identity: ${identity}, Motivation: ${motivation}, Streak: ${streak}`;
+        document.querySelector(".buttons").style.display = "none";
+        return;
+      }
+      document.getElementById("card").textContent = cards[day - 1].text;
+    }
+
+    function swipe(direction) {
+      const effects = cards[day - 1].effects[direction];
+      identity += effects.identity;
+      motivation += effects.motivation;
+      streak += effects.streak;
+      day++;
+      updateStats();
+      showCard();
+    }
+
+    updateStats();
+    showCard();
+  </script>
+
+</body>
+</html>
